@@ -77,27 +77,59 @@ window.addEventListener('keydown', (e) => {
 let narrowScreen;
 const collages = document.querySelectorAll('.containerCollage');
 
-function addCollageSize(){
-  collages.forEach(collage => {
-    let ratios = 0;
-    let columns = 0;
-    let images = collage.getElementsByTagName('img');
-
-    for (const image of images) {
-      ratios += image.naturalWidth / image.naturalHeight;
-      columns++;
-    }
-
-    for (const image of images) {
-      image.setAttribute('style', 'height: calc(min(100vw, 1200px)/' + ratios + ')');
-    }
+function setCollageGrid() {
+    collages.forEach(collage => {
+    let columns = collage.getElementsByTagName('img').length;
 
     collage.setAttribute('style', 'grid-template-columns:' + ' auto'.repeat(columns));
 
     narrowScreen = false;
   })
 }
- addCollageSize();
+
+function addCollageSize(){
+  collages.forEach(collage => {
+    let images = collage.getElementsByTagName('img');
+    let ratios = 0;
+
+    for (const image of images) {
+      ratios += image.naturalWidth / image.naturalHeight;
+    }
+
+    for (const image of images) {
+      image.setAttribute('style', 'height: calc(min(100vw, 1200px)/' + ratios + ')');
+    }
+
+    narrowScreen = false;
+  })
+}
+
+setCollageGrid();
+
+Promise.all(Array.from(document.images).
+  filter(img => !img.complete).
+  map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).
+  then(() => {
+    addCollageSize();
+});
+
+/*
+function totalImagesWidth() {
+  let loadedImages = 0;
+  let images = document.querySelectorAll('.containerCollage img');
+  images.forEach(each => {
+    each.addEventListener("load", () => {
+      loadedImages++;
+
+      if (loadedImages == images.length) {
+        console.log(loadedImages);
+        addCollageSize();
+      }
+    });
+  });
+}
+
+totalImagesWidth();
 /*
 function removeCollageSize(){
   collages.forEach(collage => {
